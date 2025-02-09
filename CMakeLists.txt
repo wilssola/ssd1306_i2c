@@ -41,7 +41,7 @@ add_executable(ssd1306_i2c ssd1306_i2c.c)
 pico_generate_pio_header(ssd1306_i2c ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
 # pull in common dependencies and additional i2c hardware support
-target_link_libraries(ssd1306_i2c pico_stdlib hardware_pio pico_multicore hardware_i2c)
+target_link_libraries(ssd1306_i2c pico_stdlib hardware_pio pico_multicore hardware_i2c pico_stdio_usb )
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(ssd1306_i2c)

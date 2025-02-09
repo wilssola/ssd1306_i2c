@@ -1,10 +1,21 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include "pico/stdlib.h"
+#include "pico/stdio_usb.h"
 #include "pico/multicore.h"
+#include "pico/binary_info.h"
+#include "hardware/i2c.h"
+#include "raspberry26x32.h"
+#include "ssd1306_font.h"
 #include "ws2812.pio.h"
 
 #include "include/pin.h"
 #include "include/led.h"
 #include "include/button.h"
 #include "include/ws2812.h"
+#include "include/ssd1306_i2c.h"
 
 volatile uint8_t led_color = MIN_LED;
 
@@ -95,9 +106,9 @@ void toggle_green_led() {
     char message[32];
     snprintf(message, sizeof(message), "LED Verde: %s", led_green_state ? "Ligado" : "Desligado");
 
-    ssd1306_clear();
-    ssd1306_draw_string(0, 0, message);
-    ssd1306_show();
+    SSD1306_clear();
+    SSD1306_draw_string(0, 0, message);
+    SSD1306_show();
 
     printf("%s\n", message);
 }
@@ -109,9 +120,9 @@ void toggle_blue_led() {
     char message[32];
     snprintf(message, sizeof(message), "LED Azul: %s", led_blue_state ? "Ligado" : "Desligado");
 
-    ssd1306_clear();
-    ssd1306_draw_string(0, 0, message);
-    ssd1306_show();
+    SSD1306_clear();
+    SSD1306_draw_string(0, 0, message);
+    SSD1306_show();
 
     printf("%s\n", message);
 }
@@ -128,17 +139,51 @@ int main() {
     // Inicializa o controlador WS2812
     ws2812_init();
     
-    ssd1306_init();
+    #if !defined(i2c_default) || !defined(I2C_SDA_PIN) || !defined(I2C_SCL_PIN)
+    
+    #warning i2c / SSD1306_i2c example requires a board with I2C pins
+    puts("Default I2C pins were not defined");
+    
+    #else
 
-    // Iniciar o núcleo 1 para piscar o LED
-    //multicore_launch_core1(core1_entry);
+    bi_decl(bi_2pins_with_func(I2C_SDA_PIN, I2C_SCL_PIN, GPIO_FUNC_I2C));
+    bi_decl(bi_program_description("SSD1306 OLED driver I2C example for the Raspberry Pi Pico"));
+
+    printf("Hello, SSD1306 OLED display! Look at my raspberries..\n");
+
+    i2c_init(i2c_default, SSD1306_I2C_CLK * 1000);
+    gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
+    gpio_pull_up(I2C_SDA_PIN);
+    gpio_pull_up(I2C_SCL_PIN);
+
+    SSD1306_init();
+
+    struct render_area frame_area = {
+        .start_col = 0,
+        .end_col = SSD1306_WIDTH - 1,
+        .start_page = 0,
+        .end_page = SSD1306_NUM_PAGES - 1
+    };
+
+    calc_render_area_buflen(&frame_area);
+
+    uint8_t buf[SSD1306_BUF_LEN];
+    memset(buf, 0, SSD1306_BUF_LEN);
+    render(buf, &frame_area);
+
+    led_init();
+    button_init();
+    ws2812_init();
 
     while (true) {
         if (stdio_usb_connected()) {
             int c = getchar_timeout_us(0);
 
             if (c != PICO_ERROR_TIMEOUT) {
-                display_character((char)c);
+                SSD1306_clear();
+                WriteChar(buf, 0, 0, (char)c);
+                render(buf, &frame_area);
 
                 if (c >= '0' && c <= '9') {
                     display_symbol(c - '0');
@@ -146,20 +191,19 @@ int main() {
             }
         }
 
-        // Verifica se o botão A foi pressionado
         if (button_a_pressed && !button_b_pressed) {
             button_a_pressed = false;
-            
             toggle_green_led();
         }
 
-        // Verifica se o botão B foi pressionado
         if (button_b_pressed && !button_a_pressed) {
             button_b_pressed = false;
-            
             toggle_blue_led();
         }
 
         check_both_buttons();
     }
+    #endif
+
+    return 0;
 }
