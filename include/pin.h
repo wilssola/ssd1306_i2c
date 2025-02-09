@@ -8,6 +8,7 @@
 #define BUTTON_B_PIN 6
 #define WS2812_PIN 7
 
+#define I2C_PORT i2c1
 #define I2C_SDA_PIN 14
 #define I2C_SCL_PIN 15
 

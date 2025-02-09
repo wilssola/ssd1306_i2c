@@ -146,20 +146,13 @@ int main() {
 
     // Inicializa o controlador WS2812
     ws2812_init();
-    
-    #if !defined(i2c_default) || !defined(I2C_SDA_PIN) || !defined(I2C_SCL_PIN)
-    
-    #warning i2c / SSD1306_i2c example requires a board with I2C pins
-    puts("Default I2C pins were not defined");
-    
-    #else
 
     bi_decl(bi_2pins_with_func(I2C_SDA_PIN, I2C_SCL_PIN, GPIO_FUNC_I2C));
     bi_decl(bi_program_description("SSD1306 OLED driver I2C example for the Raspberry Pi Pico"));
 
     printf("Hello, SSD1306 OLED display! Look at my raspberries..\n");
 
-    i2c_init(i2c_default, SSD1306_I2C_CLK * 1000);
+    i2c_init(I2C_PORT, SSD1306_I2C_CLK * 1000);
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
@@ -188,8 +181,11 @@ int main() {
         if (stdio_usb_connected()) {
             int c = getchar_timeout_us(0);
 
-            if (c != PICO_ERROR_TIMEOUT) {
-                SSD1306_clear();
+            if (c != PICO_ERROR_TIMEOUT) {                
+                uint8_t buf[SSD1306_BUF_LEN];
+                memset(buf, 0, SSD1306_BUF_LEN);
+                render(buf, &frame_area);
+
                 WriteChar(buf, 0, 0, (char)c);
                 render(buf, &frame_area);
 
@@ -211,7 +207,6 @@ int main() {
 
         check_both_buttons();
     }
-    #endif
 
     return 0;
 }
