@@ -101,30 +101,36 @@ void display_symbol(uint8_t number) {
     ws2812_draw_number(number);
 }
 
-void toggle_green_led() {
+void toggle_green_led(struct render_area *frame_area) {
     led_green_state = !led_green_state;
     gpio_put(LED_RGB_GREEN_PIN, led_green_state);
 
     char message[32];
     snprintf(message, sizeof(message), "LED Verde: %s", led_green_state ? "Ligado" : "Desligado");
 
-    SSD1306_clear();
-    SSD1306_draw_string(0, 0, message);
-    SSD1306_show();
+    uint8_t buf[SSD1306_BUF_LEN];
+    memset(buf, 0, SSD1306_BUF_LEN);
+    render(buf, frame_area);
+
+    WriteString(buf, 0, 0, message);
+    render(buf, frame_area);
 
     printf("%s\n", message);
 }
 
-void toggle_blue_led() {
+void toggle_blue_led(struct render_area *frame_area) {
     led_blue_state = !led_blue_state;
     gpio_put(LED_RGB_BLUE_PIN, led_blue_state);
 
     char message[32];
     snprintf(message, sizeof(message), "LED Azul: %s", led_blue_state ? "Ligado" : "Desligado");
 
-    SSD1306_clear();
-    SSD1306_draw_string(0, 0, message);
-    SSD1306_show();
+    uint8_t buf[SSD1306_BUF_LEN];
+    memset(buf, 0, SSD1306_BUF_LEN);
+    render(buf, frame_area);
+
+    WriteString(buf, 0, 0, message);
+    render(buf, frame_area);
 
     printf("%s\n", message);
 }
@@ -195,12 +201,12 @@ int main() {
 
         if (button_a_pressed && !button_b_pressed) {
             button_a_pressed = false;
-            toggle_green_led();
+            toggle_green_led(&frame_area);
         }
 
         if (button_b_pressed && !button_a_pressed) {
             button_b_pressed = false;
-            toggle_blue_led();
+            toggle_blue_led(&frame_area);
         }
 
         check_both_buttons();
