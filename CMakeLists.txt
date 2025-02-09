@@ -35,14 +35,23 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(ssd1306_i2c
-        ssd1306_i2c.c
-        )
+add_executable(ssd1306_i2c ssd1306_i2c.c)
+
+# generate the header file into the source tree as it is included in the RP2040 datasheet
+pico_generate_pio_header(ssd1306_i2c ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio OUTPUT_DIR ${CMAKE_CURRENT_LIST_DIR}/generated)
 
 # pull in common dependencies and additional i2c hardware support
-target_link_libraries(ssd1306_i2c pico_stdlib hardware_i2c)
+target_link_libraries(ssd1306_i2c pico_stdlib hardware_pio pico_multicore hardware_i2c)
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(ssd1306_i2c)
 
 # add url via pico_set_program_url
+
+# Additionally generate python and hex pioasm outputs for inclusion in the RP2040 datasheet
+add_custom_target(ssd1306_i2c_datasheet DEPENDS ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio
+        COMMAND pioasm -o python ${CMAKE_CURRENT_LIST_DIR}/ws2812.pio ${CMAKE_CURRENT_LIST_DIR}/generated/ws2812.py
+        VERBATIM)
+add_dependencies(ssd1306_i2c ssd1306_i2c_datasheet)
