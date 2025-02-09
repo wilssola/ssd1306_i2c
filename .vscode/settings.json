@@ -43,6 +43,8 @@
         "binary_info.h": "c",
         "ssd1306_font.h": "c",
         "ws2812.h": "c",
-        "led.h": "c"
+        "led.h": "c",
+        "raspberry26x32.h": "c",
+        "pin.h": "c"
     }
 }

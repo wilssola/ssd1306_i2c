@@ -7,9 +7,11 @@
 #include "pico/multicore.h"
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
-#include "raspberry26x32.h"
-#include "ssd1306_font.h"
+
 #include "ws2812.pio.h"
+
+#include "include/raspberry26x32.h"
+#include "include/ssd1306_font.h"
 
 #include "include/pin.h"
 #include "include/led.h"

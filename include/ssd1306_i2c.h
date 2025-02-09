@@ -13,8 +13,8 @@
  #include "pico/binary_info.h"
  #include "hardware/i2c.h"
 
- #include "../raspberry26x32.h"
- #include "../ssd1306_font.h"
+ #include "raspberry26x32.h"
+ #include "ssd1306_font.h"
 
  #include "pin.h"
 
