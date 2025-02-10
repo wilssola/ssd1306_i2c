@@ -55,6 +55,18 @@ void ssd1306_init(ssd1306_t *ssd, uint8_t width, uint8_t height, bool external_v
   ssd->port_buffer[0] = 0x80;
 }
 
+// Função para enviar um comando ao display
+void ssd1306_command(ssd1306_t *ssd, uint8_t command) {
+  ssd->port_buffer[1] = command;
+  i2c_write_blocking(
+    ssd->i2c_port,
+    ssd->address,
+    ssd->port_buffer,
+    2,
+    false
+  );
+}
+
 // Função para configurar o display
 void ssd1306_config(ssd1306_t *ssd) {
   ssd1306_command(ssd, SET_DISP | 0x00);
@@ -82,18 +94,6 @@ void ssd1306_config(ssd1306_t *ssd) {
   ssd1306_command(ssd, SET_CHARGE_PUMP);
   ssd1306_command(ssd, 0x14);
   ssd1306_command(ssd, SET_DISP | 0x01);
-}
-
-// Função para enviar um comando ao display
-void ssd1306_command(ssd1306_t *ssd, uint8_t command) {
-  ssd->port_buffer[1] = command;
-  i2c_write_blocking(
-    ssd->i2c_port,
-    ssd->address,
-    ssd->port_buffer,
-    2,
-    false
-  );
 }
 
 // Função para enviar dados ao display
