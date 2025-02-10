@@ -110,7 +110,7 @@ void display_symbol(uint8_t number) {
 
     display_number(number);
 
-    printf("Número %d", number);
+    printf("Número %d\n", number);
 }
 
 // Função para limpar o display
