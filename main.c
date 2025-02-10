@@ -98,41 +98,42 @@ void check_both_buttons() {
 void display_symbol(uint8_t number) {
     // This is a placeholder function
     ws2812_clear();
-    ws2812_draw_number(number);
+
+    display_number(number);
 }
 
-void toggle_green_led(struct render_area *frame_area) {
+void toggle_green_led(struct ssd1306_t *ssd) {
     led_green_state = !led_green_state;
     gpio_put(LED_RGB_GREEN_PIN, led_green_state);
 
     char message[32];
     snprintf(message, sizeof(message), "LED Verde: %s", led_green_state ? "Ligado" : "Desligado");
 
-    uint8_t buf[SSD1306_BUF_LEN];
-    memset(buf, 0, SSD1306_BUF_LEN);
-    render(buf, frame_area);
+    display_clean(ssd);
 
-    WriteString(buf, 0, 0, message);
-    render(buf, frame_area);
+    ssd1306_draw_string(ssd, message, 0, 0);
 
     printf("%s\n", message);
 }
 
-void toggle_blue_led(struct render_area *frame_area) {
+void toggle_blue_led(struct ssd1306_t *ssd) {
     led_blue_state = !led_blue_state;
     gpio_put(LED_RGB_BLUE_PIN, led_blue_state);
 
     char message[32];
     snprintf(message, sizeof(message), "LED Azul: %s", led_blue_state ? "Ligado" : "Desligado");
 
-    uint8_t buf[SSD1306_BUF_LEN];
-    memset(buf, 0, SSD1306_BUF_LEN);
-    render(buf, frame_area);
+    display_clean(ssd);
 
-    WriteString(buf, 0, 0, message);
-    render(buf, frame_area);
+    ssd1306_draw_string(ssd, message, 0, 0);
 
     printf("%s\n", message);
+}
+
+// Função para limpar o display
+void display_clean(struct ssd1306_t *ssd) {
+    ssd1306_fill(ssd, false);
+    ssd1306_send_data(ssd);
 }
 
 int main() {
@@ -147,47 +148,29 @@ int main() {
     // Inicializa o controlador WS2812
     ws2812_init();
 
-    bi_decl(bi_2pins_with_func(I2C_SDA_PIN, I2C_SCL_PIN, GPIO_FUNC_I2C));
-    bi_decl(bi_program_description("SSD1306 OLED driver I2C example for the Raspberry Pi Pico"));
-
-    printf("Hello, SSD1306 OLED display! Look at my raspberries..\n");
-
-    i2c_init(I2C_PORT, SSD1306_I2C_CLK * 1000);
+    // Inicializa o I2C a 400kHz
+    i2c_init(I2C_PORT, 400 * 1000);
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
     gpio_pull_up(I2C_SCL_PIN);
 
-    SSD1306_init();
+    // Inicializa e configura o display SSD1306
+    ssd1306_t ssd;
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, I2C_ADDR, I2C_PORT);
+    ssd1306_config(&ssd);
+    ssd1306_send_data(&ssd);
 
-    struct render_area frame_area = {
-        .start_col = 0,
-        .end_col = SSD1306_WIDTH - 1,
-        .start_page = 0,
-        .end_page = SSD1306_NUM_PAGES - 1
-    };
-
-    calc_render_area_buflen(&frame_area);
-
-    uint8_t buf[SSD1306_BUF_LEN];
-    memset(buf, 0, SSD1306_BUF_LEN);
-    render(buf, &frame_area);
-
-    led_init();
-    button_init();
-    ws2812_init();
+    display_clean(&ssd);
 
     while (true) {
         if (stdio_usb_connected()) {
             int c = getchar_timeout_us(0);
 
             if (c != PICO_ERROR_TIMEOUT) {                
-                uint8_t buf[SSD1306_BUF_LEN];
-                memset(buf, 0, SSD1306_BUF_LEN);
-                render(buf, &frame_area);
+                display_clean(&ssd);
 
-                WriteChar(buf, 0, 0, (char)c);
-                render(buf, &frame_area);
+                ssd1306_draw_char(&ssd, c, 0, 0);
 
                 if (c >= '0' && c <= '9') {
                     display_symbol(c - '0');
@@ -197,12 +180,12 @@ int main() {
 
         if (button_a_pressed && !button_b_pressed) {
             button_a_pressed = false;
-            toggle_green_led(&frame_area);
+            toggle_green_led(&ssd);
         }
 
         if (button_b_pressed && !button_a_pressed) {
             button_b_pressed = false;
-            toggle_blue_led(&frame_area);
+            toggle_blue_led(&ssd);
         }
 
         check_both_buttons();

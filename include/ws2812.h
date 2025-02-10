@@ -58,7 +58,7 @@ void ws2812_draw() {
 #define MAX_NUMBER 9
 
 // Função para exibir o número na matriz de LEDs WS2812
-void ws2812_draw_number(uint8_t num) {
+void display_number(uint8_t num) {
     // Cores para cada número de 0 a 9
     // Seguindo a ordem do espectro visível de luz
     uint32_t colors[] = {
