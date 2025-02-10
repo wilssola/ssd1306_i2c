@@ -200,8 +200,10 @@ void ssd1306_draw_char(ssd1306_t *ssd, char c, uint8_t x, uint8_t y) {
     index = (c - 'A' + 11) * 8; // Para letras maiúsculas
   } else if (c >= '0' && c <= '9') {
     index = (c - '0' + 1) * 8; // Adiciona o deslocamento necessário
+  } else if(c >= 'a' && c <= 'z') {
+    index = (c - 'a' + 37) * 8; // Para letras minúsculas
   }
-
+  
   for (uint8_t i = 0; i < 8; ++i) {
     uint8_t line = font[index + i];
     for (uint8_t j = 0; j < 8; ++j) {

@@ -19,9 +19,11 @@
 #include "include/ws2812.h"
 #include "include/ssd1306_i2c.h"
 
+volatile uint8_t number = MIN_NUMBER;
+
 volatile uint8_t led_color = MIN_LED;
 
-volatile uint8_t number = MIN_NUMBER;
+volatile bool both_buttons_pressed = false;
 
 volatile bool led_green_state = false;
 volatile bool led_blue_state = false;
@@ -73,8 +75,12 @@ void switch_led() {
     // Reiniciar o núcleo 1 para atualizar a cor do LED
     multicore_reset_core1();
 
-    // Iniciar o núcleo 1 para piscar o LED com a nova cor
-    multicore_launch_core1(core1_entry);
+    if (!both_buttons_pressed) {
+        // Iniciar o núcleo 1 para piscar o LED com a nova cor
+        multicore_launch_core1(core1_entry);
+    }
+
+    both_buttons_pressed = !both_buttons_pressed;
 }
 
 // Função para verificar se ambos os botões foram pressionados
@@ -113,11 +119,12 @@ void toggle_green_led(ssd1306_t *ssd) {
     gpio_put(LED_RGB_GREEN_PIN, led_green_state);
 
     char message[32];
-    snprintf(message, sizeof(message), "LED Verde: %s", led_green_state ? "Ligado" : "Desligado");
+    snprintf(message, sizeof(message), "LED Verde %s", led_green_state ? "Ligado" : "Desligado");
 
     display_clean(ssd);
 
     ssd1306_draw_string(ssd, message, 0, 0);
+    ssd1306_send_data(ssd);
 
     printf("%s\n", message);
 }
@@ -127,11 +134,12 @@ void toggle_blue_led(ssd1306_t *ssd) {
     gpio_put(LED_RGB_BLUE_PIN, led_blue_state);
 
     char message[32];
-    snprintf(message, sizeof(message), "LED Azul: %s", led_blue_state ? "Ligado" : "Desligado");
+    snprintf(message, sizeof(message), "LED Azul %s", led_blue_state ? "Ligado" : "Desligado");
 
     display_clean(ssd);
 
     ssd1306_draw_string(ssd, message, 0, 0);
+    ssd1306_send_data(ssd);
 
     printf("%s\n", message);
 }
