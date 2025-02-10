@@ -120,6 +120,8 @@ void display_clean(ssd1306_t *ssd) {
 }
 
 void toggle_green_led(ssd1306_t *ssd) {
+    gpio_put(LED_RGB_BLUE_PIN, 0);
+
     led_green_state = !led_green_state;
     gpio_put(LED_RGB_GREEN_PIN, led_green_state);
 
@@ -134,7 +136,9 @@ void toggle_green_led(ssd1306_t *ssd) {
     printf("%s\n", message);
 }
 
-void toggle_blue_led(ssd1306_t *ssd) {
+void toggle_blue_led(ssd1306_t *ssd) {            
+    gpio_put(LED_RGB_GREEN_PIN, 0);
+
     led_blue_state = !led_blue_state;
     gpio_put(LED_RGB_BLUE_PIN, led_blue_state);
 
