@@ -8,6 +8,12 @@
 
 extern volatile uint8_t led_color;
 
+void off_led() {
+    gpio_put(LED_RGB_RED_PIN, 0);
+    gpio_put(LED_RGB_GREEN_PIN, 0);
+    gpio_put(LED_RGB_BLUE_PIN, 0);
+}
+
 // Função para piscar o LED vermelho do LED RGB 5 vezes por segundo
 void blink_led() {
     uint8_t pin;

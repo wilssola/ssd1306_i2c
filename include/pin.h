@@ -12,5 +12,6 @@
 #define I2C_SDA_PIN 14
 #define I2C_SCL_PIN 15
 #define I2C_ADDR 0x3C
+#define I2C_BAUDRATE 400000
 
 #endif

@@ -47,5 +47,6 @@
         "raspberry26x32.h": "c",
         "pin.h": "c",
         "ssd1306_i2c.h": "c",
+        "stdlib.h": "c"
     }
 }

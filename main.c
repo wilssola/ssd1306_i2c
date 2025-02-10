@@ -78,6 +78,9 @@ void switch_led() {
     if (!both_buttons_pressed) {
         // Iniciar o núcleo 1 para piscar o LED com a nova cor
         multicore_launch_core1(core1_entry);
+    } else {
+        // Desligar os LED RGB
+        off_led();
     }
 
     both_buttons_pressed = !both_buttons_pressed;
@@ -106,6 +109,8 @@ void display_symbol(uint8_t number) {
     ws2812_clear();
 
     display_number(number);
+
+    printf("Número %d", number);
 }
 
 // Função para limpar o display
@@ -156,8 +161,8 @@ int main() {
     // Inicializa o controlador WS2812
     ws2812_init();
 
-    // Inicializa o I2C a 400kHz
-    i2c_init(I2C_PORT, 400 * 1000);
+    // Inicializa o I2C
+    i2c_init(I2C_PORT, I2C_BAUDRATE);
     gpio_set_function(I2C_SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL_PIN, GPIO_FUNC_I2C);
     gpio_pull_up(I2C_SDA_PIN);
